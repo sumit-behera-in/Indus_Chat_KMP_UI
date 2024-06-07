@@ -7,7 +7,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.realm.plugin)
+    //  alias(libs.plugins.realm.plugin)
     alias(libs.plugins.kotlin.serialization)
 }
 
@@ -42,7 +42,7 @@ kotlin {
             implementation(libs.navigator.koin)
             implementation(libs.koin.core)
 
-            implementation(libs.mongodb.realm)
+            //       implementation(libs.mongodb.realm)
             implementation(libs.kotlin.coroutines)
             implementation(libs.kotlin.coroutines.androi)
             implementation(libs.stately.common)
@@ -51,6 +51,7 @@ kotlin {
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.cio)
             implementation(libs.ktor.client.serialization)
+            implementation(libs.ktor.serialization.kotlinx.json)
             implementation(libs.ktor.client.websockets)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.client.logging)
@@ -84,6 +85,7 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/INDEX.LIST"
         }
     }
     buildTypes {

@@ -20,55 +20,60 @@ import util.Resource
 
 class ChatSocketServiceImpl(private val client: HttpClient) : ChatSocketService {
 
-    private val socket: WebSocketSession? = null
+    private var socket: WebSocketSession? = null
+
 
     override suspend fun initSession(username: String): Resource<Unit> {
         return try {
-
-            client.webSocketSession {
-                url(ChatSocketService.Endpoints.ChatSocket.url)
+            socket?.close()
+            socket = client.webSocketSession {
+                url("${ChatSocketService.Endpoints.ChatSocket.url}?username=$username")
             }
             if (socket?.isActive == true) {
                 Resource.Success(Unit)
             } else {
                 Resource.Error("Couldn't establish a connection")
             }
-
         } catch (e: Exception) {
             Resource.Error(e.localizedMessage ?: "Unknown error")
-
         }
     }
 
     override suspend fun sendMessage(message: String): Resource<Unit> {
         return try {
-            socket?.send(Frame.Text(message))
-            Resource.Success(Unit)
+            if (socket?.isActive == true) {
+                socket?.send(Frame.Text(message))
+            } else {
+                return Resource.Error("Socket connection inactive")
+            }
+            Resource.Error("Message Sent")
         } catch (e: Exception) {
             Resource.Error(e.localizedMessage ?: "Message Send Failed")
         }
     }
 
     override fun observeMessages(): Flow<Message> {
-        return try {
-
-            socket?.incoming
-                ?.receiveAsFlow()
-                ?.filter { it is Frame.Text }
-                ?.map {
-                    val json = (it as? Frame.Text)?.readText() ?: ""
-                    val message = Json.decodeFromString<MessageDTO>(json).toMessage()
-
-                    message
-                } ?: flow { }
-
-        } catch (e: Exception) {
-            e.printStackTrace()
-            flow { }
-        }
+        return socket?.incoming
+            ?.receiveAsFlow()
+            ?.filter { it is Frame.Text }
+            ?.map {
+                val json = (it as? Frame.Text)?.readText() ?: ""
+                val message = Json.decodeFromString<MessageDTO>(json).toMessage()
+                message
+            } ?: flow { }
     }
 
     override suspend fun closeSession() {
-        socket?.close()
+        try {
+            socket?.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            socket = null
+        }
     }
+
+//    //override suspend fun isActive(): Flow<Boolean> = flow {
+//        emit(socket != null)
+//    }
 }

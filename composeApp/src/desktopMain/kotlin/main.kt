@@ -3,9 +3,12 @@ import androidx.compose.ui.window.application
 
 fun main() = application {
     Window(
-        onCloseRequest = ::exitApplication,
+        onCloseRequest = {
+            exitApplication()
+        },
         title = "Indus Chat",
     ) {
         App()
+
     }
 }

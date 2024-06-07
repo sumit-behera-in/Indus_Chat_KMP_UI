@@ -14,11 +14,13 @@ interface ChatSocketService {
 
     suspend fun closeSession()
 
+    //suspend fun isActive(): Flow<Boolean>
+
     companion object {
-        const val HTTP_BASE_URL = "ws://192.168.56.1:8080"
+        const val HTTP_BASE_URL = "ws://192.168.56.1:8080/"
     }
 
     sealed class Endpoints(val url: String) {
-        data object ChatSocket : Endpoints("$HTTP_BASE_URL/chat-socket")
+        data object ChatSocket : Endpoints(HTTP_BASE_URL + "chat-socket")
     }
 }

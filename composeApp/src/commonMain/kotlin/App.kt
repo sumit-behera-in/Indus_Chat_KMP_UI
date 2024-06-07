@@ -3,10 +3,25 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import cafe.adriel.voyager.navigator.Navigator
+import cafe.adriel.voyager.transitions.SlideTransition
+import data.remote.ChatSocketService
+import data.remote.ChatSocketServiceImpl
+import data.remote.MessageService
+import data.remote.MessageServiceImpl
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.websocket.WebSockets
+import io.ktor.serialization.kotlinx.json.json
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.koin.core.context.GlobalContext
+import org.koin.core.context.GlobalContext.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
+import presantation.chat.ChatViewModel
+import presantation.username.UserNameScreen
+import presantation.username.UserNameViewModel
 import presentation.theme.darkScheme
 import presentation.theme.lightScheme
 
@@ -21,29 +36,44 @@ fun App() {
             if (isSystemInDarkTheme()) darkScheme else lightScheme
         )
 
-//        // UI
-//        MaterialTheme(colorScheme = colors) {
-//            Navigator(HomeScreen()) {
-//                SlideTransition(it)
-//            }
-//        }
+        // UI
+        MaterialTheme(colorScheme = colors) {
+            Navigator(UserNameScreen()) {
+                SlideTransition(it)
+            }
+        }
     }
 }
 
-val realmModule = module {
+val mainModule = module {
     // singleton
 
 //    single { RealmDb() }
 //    // Viewmodel factory
-//    single { HomeScreenViewModel(get()) }
-//    single { TaskViewModel(get()) }
 
+
+    single {
+        HttpClient(CIO) {
+            install(Logging)
+            install(WebSockets)
+            install(ContentNegotiation) {
+                json()
+            }
+        }
+    }
+
+    single<MessageService> { MessageServiceImpl(get()) }
+    single<ChatSocketService> { ChatSocketServiceImpl(get()) }
+
+    single { UserNameViewModel() }
+    single { ChatViewModel(get(), get()) }
 }
 
 fun initKoin() {
     stopKoin()
-    GlobalContext.startKoin {
-        modules(realmModule)
+
+    startKoin {
+        modules(mainModule)
     }
 
 }
