@@ -23,6 +23,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,7 +37,9 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import presantation.username.UserNameScreen
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class ChatScreen(private val username: String) : Screen {
     @Composable
@@ -43,10 +47,14 @@ class ChatScreen(private val username: String) : Screen {
 
         val viewModel: ChatViewModel = getScreenModel()
         val navigator = LocalNavigator.currentOrThrow
+        val coroutineScope = rememberCoroutineScope()
 
         val state = viewModel.state.value
 
-        viewModel.connect(username)
+        LaunchedEffect(true) {
+            viewModel.connect(username)
+        }
+
         viewModel.getAllMessages()
 
         Scaffold(
@@ -61,8 +69,11 @@ class ChatScreen(private val username: String) : Screen {
                         contentDescription = "Back",
                         modifier = Modifier.weight(0.1f)
                             .clickable {
-                                viewModel.disconnect()
-                                navigator.replace(UserNameScreen())
+                                coroutineScope.launch(Dispatchers.IO) {
+                                    viewModel.disconnect()
+                                    delay(1000)
+                                    navigator.pop()
+                                }
                             }
                     )
 
@@ -132,7 +143,8 @@ class ChatScreen(private val username: String) : Screen {
                                 fontWeight = FontWeight.Bold,
                                 color = if (isMe) Color.Blue else Color.Black,
                                 modifier = Modifier.fillMaxWidth(),
-                                fontSize = 30.sp
+                                fontSize = 30.sp,
+                                textAlign = TextAlign.Center
                             )
 
                             Text(

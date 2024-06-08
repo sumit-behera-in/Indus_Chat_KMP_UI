@@ -42,7 +42,7 @@ class UserNameScreen : Screen {
 
             Button(onClick = {
                 viewModel.onJoinClick()
-                navigator.replace(ChatScreen(viewModel.userName.value))
+                navigator.push(ChatScreen(viewModel.userName.value))
             }) {
                 Text("Join")
             }

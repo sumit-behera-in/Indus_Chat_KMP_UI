@@ -48,7 +48,7 @@ class ChatViewModel(
 
             if (result.message?.isNotBlank() == true) {
                 errorText = result.message
-                delay(1000)
+                delay(1500)
                 errorText = ""
             }
 
@@ -58,6 +58,7 @@ class ChatViewModel(
     fun disconnect() {
         screenModelScope.launch(Dispatchers.IO) {
             chatSocketService.closeSession()
+            active = false
         }
     }
 
