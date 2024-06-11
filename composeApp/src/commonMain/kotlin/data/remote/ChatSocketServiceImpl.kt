@@ -1,5 +1,6 @@
 package data.remote
 
+import data.realm.RealmDB
 import data.remote.dto.MessageDTO
 import domain.model.Message
 import io.ktor.client.HttpClient
@@ -21,7 +22,10 @@ import kotlinx.serialization.json.Json
 import util.Resource
 import kotlin.coroutines.cancellation.CancellationException
 
-class ChatSocketServiceImpl(private val client: HttpClient) : ChatSocketService {
+class ChatSocketServiceImpl(
+    private val client: HttpClient,
+    private val realmDB: RealmDB,
+) : ChatSocketService {
 
     private var socket: WebSocketSession? = null
 
@@ -65,6 +69,7 @@ class ChatSocketServiceImpl(private val client: HttpClient) : ChatSocketService 
                 val json = (it as Frame.Text).readText()
                 val messageDto = Json.decodeFromString<MessageDTO>(json)
                 println("ChatSocketServiceImpl Received message: $messageDto")
+                realmDB.addMessage(messageDto.toMessage())
                 messageDto.toMessage()
             }
             .catch { e ->

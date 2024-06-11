@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.transitions.SlideTransition
+import data.realm.RealmDB
 import data.remote.ChatSocketService
 import data.remote.ChatSocketServiceImpl
 import data.remote.MessageService
@@ -51,7 +52,7 @@ fun App() {
 val mainModule = module {
     // singleton
 
-//    single { RealmDb() }
+    single { RealmDB() }
 //    // Viewmodel factory
 
 
@@ -69,10 +70,10 @@ val mainModule = module {
     }
 
     single<MessageService> { MessageServiceImpl(get()) }
-    single<ChatSocketService> { ChatSocketServiceImpl(get()) }
+    single<ChatSocketService> { ChatSocketServiceImpl(get(), get()) }
 
     single { UserNameViewModel() }
-    single { ChatViewModel(get(), get()) }
+    single { ChatViewModel(get(), get(), get()) }
 }
 
 fun initKoin() {

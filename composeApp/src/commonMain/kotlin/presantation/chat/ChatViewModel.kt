@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import data.realm.RealmDB
 import data.remote.ChatSocketService
 import data.remote.MessageService
 import domain.model.Message
@@ -20,6 +21,7 @@ import util.Resource
 class ChatViewModel(
     private val messageService: MessageService,
     private val chatSocketService: ChatSocketService,
+    private val realmDB: RealmDB,
 ) : ScreenModel {
 
     private var messageJob: Job? = null
@@ -58,7 +60,7 @@ class ChatViewModel(
                 }
             } else {
                 if (result.message?.isNotBlank() == true) {
-                    withContext(Dispatchers.Main) {
+                    withContext(Dispatchers.IO) {
                         errorText = result.message
                     }
                     delay(1500)
@@ -81,18 +83,21 @@ class ChatViewModel(
     fun getAllMessages() {
         screenModelScope.launch(Dispatchers.IO) {
             _state.value = _state.value.copy(isLoading = true)
-            val results = messageService.getAllMessages()
-            _state.value = _state.value.copy(isLoading = false)
+            var results = messageService.getAllMessages()
+            if (results.isEmpty()) {
+                results = realmDB.getAllMessages()
+            } else {
+                realmDB.updateMessage(results)
+            }
+            _state.value = _state.value.copy(isLoading = false, messages = results)
             messages = results
-            _state.value = _state.value.copy(messages = results)
-
         }
     }
 
     fun getActiveUsers() {
         screenModelScope.launch(Dispatchers.IO) {
             val activeUsers = messageService.getActiveUsers().toMutableList()
-            withContext(Dispatchers.Main) {
+            withContext(Dispatchers.IO) {
                 _state.value = _state.value.copy(activeChatId = activeUsers)
             }
         }
@@ -103,11 +108,11 @@ class ChatViewModel(
             if (messageText.value.isNotBlank()) {
                 val result = chatSocketService.sendMessage(messageText.value)
                 if (result.message?.isNotBlank() == true) {
-                    withContext(Dispatchers.Main) {
+                    withContext(Dispatchers.IO) {
                         errorText = result.message
                     }
                     delay(1000)
-                    withContext(Dispatchers.Main) {
+                    withContext(Dispatchers.IO) {
                         errorText = ""
                     }
                 }
