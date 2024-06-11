@@ -2,6 +2,7 @@ package presantation.chat
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,11 +13,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Face
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -51,44 +55,75 @@ class ChatScreen(private val username: String) : Screen {
 
         val state = viewModel.state.value
 
+
         LaunchedEffect(true) {
             viewModel.connect(username)
+            viewModel.getAllMessages()
+            viewModel.getActiveUsers()
         }
-
-        viewModel.getAllMessages()
 
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             topBar = {
-                Row(
-                    modifier = Modifier.fillMaxWidth()
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.SpaceEvenly,
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
 
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
-                        modifier = Modifier.weight(0.1f)
-                            .clickable {
-                                coroutineScope.launch(Dispatchers.IO) {
-                                    viewModel.disconnect()
-                                    delay(1000)
-                                    navigator.pop()
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            modifier = Modifier.weight(0.1f)
+                                .clickable {
+                                    coroutineScope.launch(Dispatchers.IO) {
+                                        viewModel.disconnect()
+                                        delay(1000)
+                                        navigator.pop()
+                                    }
                                 }
+                        )
+
+                        Text(
+                            text = viewModel.errorText.ifBlank { username },
+                            modifier = Modifier.weight(0.9f),
+                            textAlign = TextAlign.Center
+                        )
+
+                        Icon(
+                            imageVector = Icons.Filled.AccountCircle,
+                            contentDescription = "isActive",
+                            tint = if (viewModel.active) Color.Green else Color.Red
+                        )
+
+                    }
+
+                    Spacer(modifier = Modifier.height(5.dp))
+
+                    LazyRow(
+                        Modifier.fillMaxWidth()
+                    ) {
+
+                        items(state.activeChatId.size) {
+
+                            Card(
+                                modifier = Modifier
+                                    .padding(8.dp),
+                            ) {
+                                Text(state.activeChatId[it].name)
                             }
-                    )
+                            Icon(
+                                Icons.Filled.Face,
+                                contentDescription = "add",
+                                tint = Color.Green
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
 
-                    Text(
-                        text = viewModel.errorText.ifBlank { username },
-                        modifier = Modifier.weight(0.9f),
-                        textAlign = TextAlign.Center
-                    )
-
-                    Icon(
-                        imageVector = Icons.Filled.AccountCircle,
-                        contentDescription = "isActive",
-                        tint = if (viewModel.active) Color.Green else Color.Red
-                    )
-
+                        }
+                    }
                 }
             },
             bottomBar = {
@@ -118,14 +153,24 @@ class ChatScreen(private val username: String) : Screen {
             }
         ) {
 
+//            if (state.isLoading) {
+//                Box(
+//                    modifier = Modifier.padding(it)
+//                        .fillMaxSize()
+//                ) {
+//                    CircularProgressIndicator(
+//                        modifier = Modifier.fillMaxSize(0.3f)
+//                    )
+//                }
+//            } else {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(it)
             ) {
 
-                items(state.messages.size) { index ->
-                    val isMe = state.messages[index].user == username
+                items(viewModel.messages.size) { index ->
+                    val isMe = viewModel.messages[index].user == username
                     Box(
                         modifier = Modifier.fillMaxWidth(),
                         contentAlignment = if (isMe) Alignment.CenterEnd else Alignment.CenterStart
@@ -139,7 +184,7 @@ class ChatScreen(private val username: String) : Screen {
                                 .clip(RoundedCornerShape(8.dp))
                         ) {
                             Text(
-                                text = state.messages[index].user,
+                                text = viewModel.messages[index].user,
                                 fontWeight = FontWeight.Bold,
                                 color = if (isMe) Color.Blue else Color.Black,
                                 modifier = Modifier.fillMaxWidth(),
@@ -148,14 +193,14 @@ class ChatScreen(private val username: String) : Screen {
                             )
 
                             Text(
-                                text = state.messages[index].text,
+                                text = viewModel.messages[index].text,
                                 fontWeight = FontWeight.Bold,
                                 color = if (isMe) Color.Blue else Color.Black,
                                 fontSize = 20.sp
                             )
 
                             Text(
-                                text = state.messages[index].timeStamp,
+                                text = viewModel.messages[index].timeStamp,
                                 fontWeight = FontWeight.Bold,
                                 color = if (isMe) Color.Blue else Color.Black,
                                 textAlign = TextAlign.End,
@@ -165,9 +210,11 @@ class ChatScreen(private val username: String) : Screen {
                     }
 
                     Spacer(modifier = Modifier.height(15.dp))
+
                 }
 
             }
+            // }
 
 
         }

@@ -16,6 +16,8 @@ junit = "4.13.2"
 kotlin = "2.0.0"
 kotlinxSerializationJson = "1.5.1"
 ktorClientContentNegotiation = "2.0.0"
+logbackAndroid = "3.0.0"
+slf4jApi = "2.0.12"
 voyager = "1.0.0"
 koin = "3.5.3"
 realm = "1.13.0"
@@ -39,6 +41,7 @@ androidx-activity-compose = { module = "androidx.activity:activity-compose", ver
 compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose" }
 compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktorClientContentNegotiation" }
+logback-android = { module = "com.github.tony19:logback-android", version.ref = "logbackAndroid" }
 navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.ref = "voyager" }
 navigator-screen-model = { module = "cafe.adriel.voyager:voyager-screenmodel", version.ref = "voyager" }
 navigator-transitions = { module = "cafe.adriel.voyager:voyager-transitions", version.ref = "voyager" }
@@ -47,6 +50,7 @@ koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 mongodb-realm = { module = "io.realm.kotlin:library-base", version.ref = "realm" }
 kotlin-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlin-coroutines-androi = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4jApi" }
 stately-common = { module = "co.touchlab:stately-common", version.ref = "stately" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor_version" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor_version" }

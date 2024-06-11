@@ -1,7 +1,9 @@
 package data.remote
 
 import data.remote.dto.MessageDTO
+import data.remote.dto.UsersDTO
 import domain.model.Message
+import domain.model.Users
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
@@ -18,6 +20,17 @@ class MessageServiceImpl(
             val responseBody: String = response.bodyAsText()
             Json.decodeFromString(ListSerializer(MessageDTO.serializer()), responseBody)
                 .map { it.toMessage() }
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    override suspend fun getActiveUsers(): List<Users> {
+        return try {
+            val response: HttpResponse = client.get(MessageService.Endpoints.GetActiveUsers.url)
+            val responseBody: String = response.bodyAsText()
+            Json.decodeFromString(ListSerializer(UsersDTO.serializer()), responseBody)
+                .map { it.toUsers() }
         } catch (e: Exception) {
             emptyList()
         }

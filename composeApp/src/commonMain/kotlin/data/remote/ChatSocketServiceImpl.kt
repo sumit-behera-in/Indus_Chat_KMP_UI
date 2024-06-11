@@ -62,11 +62,13 @@ class ChatSocketServiceImpl(private val client: HttpClient) : ChatSocketService 
         return (socket?.incoming?.receiveAsFlow() ?: flow { })
             .filter { it is Frame.Text }
             .map {
-                val json = (it as? Frame.Text)?.readText() ?: ""
+                val json = (it as Frame.Text).readText()
                 val messageDto = Json.decodeFromString<MessageDTO>(json)
+                println("ChatSocketServiceImpl Received message: $messageDto")
                 messageDto.toMessage()
             }
             .catch { e ->
+                println("Error in flow: ${e.message}")
                 e.printStackTrace()
             }
             .onCompletion { cause ->
@@ -77,6 +79,7 @@ class ChatSocketServiceImpl(private val client: HttpClient) : ChatSocketService 
                 }
             }
     }
+
 
     override suspend fun closeSession() {
         try {
